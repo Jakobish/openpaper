@@ -420,29 +420,18 @@ class PaperCRUD(CRUDBase["Paper", PaperCreate, PaperUpdate]):
         lines = summary.split("\n")
         filtered_lines = []
 
-        for line in lines:
-            # Check if line contains markdown image syntax
-            if re.search(r"!\[.*?\]\([^)]+\)", line):
-                # If it contains an image reference, check if it's a valid URL or still a placeholder
-                # Remove lines that contain placeholder-style references (not actual URLs)
-                image_refs = re.findall(r"!\[.*?\]\(([^)]+)\)", line)
-                has_unmatched_placeholder = False
-
-                for ref in image_refs:
-                    # If it's not a proper URL (doesn't start with http/https) and looks like a placeholder
-                    if not ref.startswith(("http://", "https://")) and not ref.startswith(
-                        "/"
-                    ):
-                        has_unmatched_placeholder = True
-                        break
-
-                # Only keep the line if it doesn't have unmatched placeholders
-                if not has_unmatched_placeholder:
-                    filtered_lines.append(line)
-            else:
-                filtered_lines.append(line)
-
+        lines = summary.split("\n")
+        filtered_lines = [
+            line
+            for line in lines
+                if all(
+                    ref.startswith(("http://", "https://", "/"))
+                    for ref in re.findall(r"!\[.*?\]\(([^)]+)\)", line)
+                )
+        ]
         return "\n".join(filtered_lines)
+
+     
 
     def get_summary_replace_image_placeholders_shared_paper(
         self, db: Session, *, paper_id: str

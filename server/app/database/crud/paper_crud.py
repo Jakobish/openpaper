@@ -410,11 +410,9 @@ class PaperCRUD(CRUDBase["Paper", PaperCreate, PaperUpdate]):
                 r"\((?P<id>" + "|".join(map(re.escape, sorted_ids)) + r")\)"
             )
 
-            def replace_match(match):
-                placeholder_id = match.group("id")
-                return f"({replacements[placeholder_id]})"
-
-            summary = pattern.sub(replace_match, summary)
+            summary = pattern.sub(
+                lambda match: f"({replacements[match.group('id')]})", summary
+            )
 
         # Remove any remaining image references in markdown format that don't match database entries
         # Match markdown image syntax: ![alt text](url) or ![](url)

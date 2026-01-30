@@ -371,43 +371,6 @@ class PaperCRUD(CRUDBase["Paper", PaperCreate, PaperUpdate]):
             paper_id (str): ID of the paper to update.
             user (CurrentUser): Current user making the request.
         """
-
-        def _find_and_replace_all_placeholders(summary: str, images: List[PaperImage]):
-            """Find all the image placeholders in the paper. Placeholders are referenced by markdown-style image syntax, where the link is just the placeholder ID. If a placeholder is found, replace it with the actual image URL."""
-            for image in images:
-                placeholder = f"({image.placeholder_id})"
-                summary = summary.replace(placeholder, f"({image.image_url})")
-
-            # Remove any remaining image references in markdown format that don't match database entries
-            # Match markdown image syntax: ![alt text](url) or ![](url)
-            # Split by lines and filter out lines that contain unmatched image references
-            lines = summary.split("\n")
-            filtered_lines = []
-
-            for line in lines:
-                # Check if line contains markdown image syntax
-                if re.search(r"!\[.*?\]\([^)]+\)", line):
-                    # If it contains an image reference, check if it's a valid URL or still a placeholder
-                    # Remove lines that contain placeholder-style references (not actual URLs)
-                    image_refs = re.findall(r"!\[.*?\]\(([^)]+)\)", line)
-                    has_unmatched_placeholder = False
-
-                    for ref in image_refs:
-                        # If it's not a proper URL (doesn't start with http/https) and looks like a placeholder
-                        if not ref.startswith(
-                            ("http://", "https://")
-                        ) and not ref.startswith("/"):
-                            has_unmatched_placeholder = True
-                            break
-
-                    # Only keep the line if it doesn't have unmatched placeholders
-                    if not has_unmatched_placeholder:
-                        filtered_lines.append(line)
-                else:
-                    filtered_lines.append(line)
-
-            return "\n".join(filtered_lines)
-
         # Get the paper
         paper = self.get(db, id=paper_id, user=current_user)
         if not paper:
@@ -420,11 +383,68 @@ class PaperCRUD(CRUDBase["Paper", PaperCreate, PaperUpdate]):
         )
 
         # Get all image placeholders in the paper
-        image_placeholders = _find_and_replace_all_placeholders(
+        image_placeholders = self._replace_image_placeholders(
             str(paper.summary), paper_images
         )
 
         return image_placeholders
+
+    def _replace_image_placeholders(
+        self, summary: str, images: List[PaperImage]
+    ) -> str:
+        """Find all the image placeholders in the paper. Placeholders are referenced by markdown-style image syntax, where the link is just the placeholder ID. If a placeholder is found, replace it with the actual image URL."""
+        # Map placeholder_ids to their image_urls
+        # We filter out images without placeholder_id just in case
+        replacements = {
+            image.placeholder_id: image.image_url
+            for image in images
+            if image.placeholder_id
+        }
+
+        if replacements:
+            # Create a regex pattern that matches any of the placeholder IDs inside parentheses
+            # Pattern: \((id1|id2|...)\)
+            # We sort keys by length descending to ensure longer matches take precedence if overlapping
+            sorted_ids = sorted(replacements.keys(), key=len, reverse=True)
+            pattern = re.compile(
+                r"\((?P<id>" + "|".join(map(re.escape, sorted_ids)) + r")\)"
+            )
+
+            def replace_match(match):
+                placeholder_id = match.group("id")
+                return f"({replacements[placeholder_id]})"
+
+            summary = pattern.sub(replace_match, summary)
+
+        # Remove any remaining image references in markdown format that don't match database entries
+        # Match markdown image syntax: ![alt text](url) or ![](url)
+        # Split by lines and filter out lines that contain unmatched image references
+        lines = summary.split("\n")
+        filtered_lines = []
+
+        for line in lines:
+            # Check if line contains markdown image syntax
+            if re.search(r"!\[.*?\]\([^)]+\)", line):
+                # If it contains an image reference, check if it's a valid URL or still a placeholder
+                # Remove lines that contain placeholder-style references (not actual URLs)
+                image_refs = re.findall(r"!\[.*?\]\(([^)]+)\)", line)
+                has_unmatched_placeholder = False
+
+                for ref in image_refs:
+                    # If it's not a proper URL (doesn't start with http/https) and looks like a placeholder
+                    if not ref.startswith(("http://", "https://")) and not ref.startswith(
+                        "/"
+                    ):
+                        has_unmatched_placeholder = True
+                        break
+
+                # Only keep the line if it doesn't have unmatched placeholders
+                if not has_unmatched_placeholder:
+                    filtered_lines.append(line)
+            else:
+                filtered_lines.append(line)
+
+        return "\n".join(filtered_lines)
 
     def get_summary_replace_image_placeholders_shared_paper(
         self, db: Session, *, paper_id: str

@@ -418,16 +418,13 @@ class PaperCRUD(CRUDBase["Paper", PaperCreate, PaperUpdate]):
         # Match markdown image syntax: ![alt text](url) or ![](url)
         # Split by lines and filter out lines that contain unmatched image references
         lines = summary.split("\n")
-        filtered_lines = []
-
-        lines = summary.split("\n")
         filtered_lines = [
             line
             for line in lines
-                if all(
-                    ref.startswith(("http://", "https://", "/"))
-                    for ref in re.findall(r"!\[.*?\]\(([^)]+)\)", line)
-                )
+            if all(
+                ref.startswith(("http://", "https://", "/"))
+                for ref in re.findall(r"!\[.*?\]\(([^)]+)\)", line)
+            )
         ]
         return "\n".join(filtered_lines)
 

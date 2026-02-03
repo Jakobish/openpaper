@@ -22,8 +22,8 @@ CLOUDFLARE_PUBLIC_DOMAIN=your_public_bucket_domain # e.g. assets.example.com
 AWS_REGION=us-east-1
 
 # Optional Analytics
-NEXT_PUBLIC_POSTHOG_KEY=
-NEXT_PUBLIC_POSTHOG_HOST=
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+NEXT_PUBLIC_POSTHOG_HOST=your_posthog_host
 
 # Optional Payments
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=

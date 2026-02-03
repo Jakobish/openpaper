@@ -18,7 +18,7 @@ GEMINI_API_KEY=your_gemini_api_key
 AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
 S3_BUCKET_NAME=your_bucket_name
-CLOUDFLARE_BUCKET_NAME=your_public_bucket_domain # e.g. assets.example.com
+CLOUDFLARE_PUBLIC_DOMAIN=your_public_bucket_domain # e.g. assets.example.com
 AWS_REGION=us-east-1
 
 # Optional Analytics

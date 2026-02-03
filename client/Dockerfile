@@ -8,12 +8,18 @@ WORKDIR /app
 
 # Set as environment variable for build time
 # These are set early as they might be needed by package scripts during install
-ENV NEXT_PUBLIC_API_URL=https://api.openpaper.ai
-ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_51O33aTCUG3OIDR6rhzcP0aDTftZyC07Iyf59NG8dAjPCLcmKyv0ADqSfO9CUYz5ugF7GI91JcyM6rIwp56Ehp41V00MYxGF8d7
+ARG NEXT_PUBLIC_API_URL=https://api.openpaper.ai
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_51O33aTCUG3OIDR6rhzcP0aDTftZyC07Iyf59NG8dAjPCLcmKyv0ADqSfO9CUYz5ugF7GI91JcyM6rIwp56Ehp41V00MYxGF8d7
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
 
 # womp womp add posthog env vars
-ENV NEXT_PUBLIC_POSTHOG_KEY=phc_i84JqfidoQncsSmusoeZF9oshYHV2SebGZkKMVtF8AG
-ENV NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+ARG NEXT_PUBLIC_POSTHOG_KEY=phc_i84JqfidoQncsSmusoeZF9oshYHV2SebGZkKMVtF8AG
+ENV NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY}
+
+ARG NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+ENV NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
 
 
 # Copy package.json and yarn.lock to the working directory
@@ -63,9 +69,14 @@ WORKDIR /app
 # Set production environment variables
 ENV NODE_ENV=production
 # Ensure NEXT_PUBLIC_API_URL is also available in the production stage if needed by the start command or runtime
-ENV NEXT_PUBLIC_API_URL=https://api.openpaper.ai
-ENV NEXT_PUBLIC_POSTHOG_KEY=phc_i84JqfidoQncsSmusoeZF9oshYHV2SebGZkKMVtF8AG
-ENV NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+ARG NEXT_PUBLIC_API_URL=https://api.openpaper.ai
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+ARG NEXT_PUBLIC_POSTHOG_KEY=phc_i84JqfidoQncsSmusoeZF9oshYHV2SebGZkKMVtF8AG
+ENV NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY}
+
+ARG NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+ENV NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
 
 
 # Copy the built application from the base image
